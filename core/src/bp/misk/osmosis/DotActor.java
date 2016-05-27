@@ -14,6 +14,7 @@ public class DotActor extends Actor {
     private Color color = Color.BLUE;
     private int radius = 5;
     private Vector2 velocity = new Vector2(0, 0);
+    private Vector2 diff = new Vector2(0, 0);
 
     public DotActor(ShapeRenderer renderer) {
         this.renderer = renderer;
@@ -43,6 +44,10 @@ public class DotActor extends Actor {
         return velocity;
     }
 
+    public Vector2 getDiff() {
+        return diff;
+    }
+
     @Override
     protected void positionChanged() {
         super.positionChanged();
@@ -62,6 +67,7 @@ public class DotActor extends Actor {
     public void act(float delta) {
         float newX = getX()+(velocity.x * delta);
         float newY = getY()+(velocity.y * delta);
+        diff.set(newX - getX(), newY - getY());
         setPosition(newX, newY);
     }
 }

@@ -90,6 +90,11 @@ public class ParticleGroupBuilder {
         this.radius = radius;
     }
 
+    public void setBorders(float left, float bottom, float right, float top) {
+        bottomLeft.set(left, bottom);
+        topRight.set(right, top);
+    }
+
     private static class ActorXComparator implements Comparator<Actor> {
 
         @Override

@@ -1,8 +1,5 @@
 package bp.misk.osmosis;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-
 import java.util.ArrayList;
 
 /**
@@ -11,25 +8,30 @@ import java.util.ArrayList;
 public class CollisionManager {
     private ArrayList<DotActor> particles = new ArrayList<DotActor>();
     private ArrayList<BorderActor> borders = new ArrayList<BorderActor>();
-    private float leftBorder;
-    private float rightBorder;
-    private float topBorder;
-    private float bottomBorder;
-
-    public void setBorders(float left, float bottom, float right, float top) {
-        leftBorder = left;
-        rightBorder = right;
-        topBorder = top;
-        bottomBorder = bottom;
-    }
+    private Membrane membrane;
 
     public void addParticles(DotActor particle) {
         particles.add(particle);
     }
 
+    public void addBorder(BorderActor border) {
+        borders.add(border);
+    }
+
+    public void setMembrane(Membrane membrane) {
+        this.membrane = membrane;
+    }
+
     public void act() {
         checkBorderCollisions();
         checkCollisionsWithEachOther();
+        checkCollisionsWithMembrane();
+    }
+
+    private void checkCollisionsWithMembrane() {
+        for (DotActor particle : particles) {
+            membrane.makeCollisionWithParticle(particle);
+        }
     }
 
     private void checkCollisionsWithEachOther() {
@@ -72,22 +74,10 @@ public class CollisionManager {
 
     private void checkBorderCollisions() {
         for (DotActor particle : particles) {
-            if (particle.getX() - particle.getRadius() <= leftBorder) {
-                particle.setVelocity(Math.abs(particle.getVelocity().x), particle.getVelocity().y);
-            } else if (particle.getX() + particle.getRadius() >= rightBorder) {
-                particle.setVelocity(-Math.abs(particle.getVelocity().x), particle.getVelocity().y);
-            }
-            if (particle.getY() - particle.getRadius() <= bottomBorder) {
-                particle.setVelocity(particle.getVelocity().x, Math.abs(particle.getVelocity().y));
-            } else if (particle.getY() + particle.getRadius() >= topBorder) {
-                particle.setVelocity(particle.getVelocity().x, -Math.abs(particle.getVelocity().y));
+            for (BorderActor border : borders) {
+                border.makeCollisionWithParticle(particle);
             }
         }
-    }
-
-    public void drawBorders(ShapeRenderer shapeRenderer) {
-        shapeRenderer.setColor(Color.LIGHT_GRAY);
-        shapeRenderer.rect(leftBorder, bottomBorder, rightBorder - leftBorder, topBorder - bottomBorder);
     }
 
     public ArrayList<DotActor> getParticles() {

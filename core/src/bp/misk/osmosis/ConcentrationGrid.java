@@ -72,7 +72,9 @@ public class ConcentrationGrid {
             int xBucket = (int) (normalizedX / cellWidth);
             int yBucket = (int) (normalizedY / cellHeight);
             if (xBucket >= xCells) xBucket = xCells - 1;
+            if (xBucket < 0) xBucket = 0;
             if (yBucket >= yCells) yBucket = yCells - 1;
+            if (yBucket < 0) yBucket = 0;
             buckets[xBucket][yBucket]++;
         }
     }
