@@ -29,7 +29,7 @@ public class BorderActor extends Actor {
         this.y2 = y2;
 
         BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.StaticBody;
+        bodyDef.type = BodyDef.BodyType.KinematicBody;
 
         body = world.createBody(bodyDef);
 
@@ -59,10 +59,20 @@ public class BorderActor extends Actor {
     @Override
     public void draw(Batch batch, float parentAlpha) {
         renderer.setColor(color);
-        renderer.line(x1, y1, x2, y2);
+        Vector2 pos = body.getPosition();
+        renderer.line(pos.x + x1, pos.y + y1, pos.x + x2, pos.y + y2);
     }
 
     public void dispose() {
         shape.dispose();
+    }
+
+    public void setXVelocity(float vel) {
+        body.setLinearVelocity(vel, 0);
+    }
+
+    @Override
+    public float getX() {
+        return body.getPosition().x + x1;
     }
 }

@@ -67,6 +67,11 @@ public class ParticleActor extends Actor {
         renderer.circle(getX(), getY(), radius);
     }
 
+    @Override
+    public Color getColor() {
+        return color;
+    }
+
     public void dispose() {
         circleShape.dispose();
     }

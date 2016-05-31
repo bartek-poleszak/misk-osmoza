@@ -16,8 +16,9 @@ public class Membrane extends Group {
 
     public Membrane(float x, float bottom, float top, float space, ShapeRenderer renderer, World world) {
         this.renderer = renderer;
-        for (float y = bottom; y <= top; y += 2*space) {
-            float yy = Math.min(y+space, top);
+        setPosition(x, bottom);
+        for (float y = bottom; y <= top; y += space + 0.3f) {
+            float yy = Math.min(y+0.3f, top);
             BorderActor actor = new BorderActor(x, y, x, yy, renderer, world);
             addActor(actor);
         }
@@ -30,7 +31,20 @@ public class Membrane extends Group {
         }
     }
 
-    public float getCurrentPosition() {
-        return getChildren().get(0).getX();
+    public void setXVelocity(float vel) {
+        for (Actor actor : getChildren()) {
+            BorderActor borderActor = (BorderActor) actor;
+            borderActor.setXVelocity(vel);
+        }
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        if (getChildren().size > 0) {
+
+            setPosition(getChildren().get(0).getX(), getY());
+        }
+
     }
 }

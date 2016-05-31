@@ -30,7 +30,7 @@ public class MyGdxGame extends ApplicationAdapter {
     private ShapeRenderer shapeRenderer;
     public static Texture sampleTexture;
     private FPSLogger fpsLogger = new FPSLogger();
-    private Membrane membrane;
+    private ParticleManager particleManager = new ParticleManager(leftBorder, rightBorder);
 
     @Override
 	public void create () {
@@ -52,21 +52,19 @@ public class MyGdxGame extends ApplicationAdapter {
         ParticleCreator rightParticleCreator = new ParticleCreator(shapeRenderer, world);
         ParticleCreator.setMaxWaterParticles(100);
 
-        leftParticleCreator.setSaltiness(0.5f);
+        leftParticleCreator.setSaltiness(0.2f);
         leftParticleCreator.setBounds(leftBorder + 2, bottomBorder, middle - 2, topBorder);
-        for (ParticleActor particleActor : leftParticleCreator.createParticles())
-            stage.addActor(particleActor);
-
+        rightParticleCreator.setSaltiness(0.6f);
         rightParticleCreator.setBounds(middle + 2, bottomBorder, rightBorder - 2, topBorder);
-        for (ParticleActor particleActor : rightParticleCreator.createParticles())
-            stage.addActor(particleActor);
 
-//        for (int i = 0; i < 100; i++) {
-//            float x = MathUtils.random(leftBorder + 2, rightBorder - 50);
-//            float y = MathUtils.random(bottomBorder + 2, topBorder - 2);
-//            ParticleActor particle = new ParticleActor(x, y, 0.5f, shapeRenderer, world);
-//            stage.addActor(particle);
-//        }
+        ArrayList<ParticleActor> particles = new ArrayList<ParticleActor>();
+        particles.addAll(leftParticleCreator.createParticles());
+        particles.addAll(rightParticleCreator.createParticles());
+        for (ParticleActor particle : particles) {
+            stage.addActor(particle);
+            particleManager.addParticle(particle);
+        }
+
     }
 
     private void createBorders() {
@@ -79,8 +77,9 @@ public class MyGdxGame extends ApplicationAdapter {
         border = new BorderActor(leftBorder, bottomBorder, rightBorder, bottomBorder, shapeRenderer, world);
         stage.addActor(border);
 
-        membrane = new Membrane((rightBorder - leftBorder)/2, bottomBorder, topBorder, 1.5f, shapeRenderer, world);
+        Membrane membrane = new Membrane((rightBorder - leftBorder) / 2, bottomBorder, topBorder, 1.5f, shapeRenderer, world);
         stage.addActor(membrane);
+        particleManager.setMembrane(membrane);
     }
 
 
@@ -103,13 +102,24 @@ public class MyGdxGame extends ApplicationAdapter {
         shapeRenderer.rect(0, 0, stage.getCamera().viewportWidth, stage.getCamera().viewportHeight);
         stage.draw();
         shapeRenderer.end();
-        fpsLogger.log();
+//        fpsLogger.log();
+        particleManager.update();
+        showData();
 
 //        debugRenderer.render(world, stage.getCamera().combined);
         world.step(Gdx.graphics.getDeltaTime(), 6, 2);
     }
 
-	@Override
+    private void showData() {
+        ParticleManager.AreaData left = particleManager.getLeftAreaData();
+        ParticleManager.AreaData right = particleManager.getRightAreaData();
+        Gdx.app.log("", String.format("Left: %f\tRight: %f\tdiff: %f", left.getWaterConcentration(), right.getWaterConcentration(),
+                left.getWaterConcentration() - right.getWaterConcentration()));
+//        Gdx.app.log("", String.format("Left: %dw, %ds\tRight: %dw, %ds", left.waterParticles, left.saltParticles,
+//                                        right.waterParticles, right.saltParticles));
+    }
+
+    @Override
 	public void dispose() {
 		stage.dispose();
         sampleTexture.dispose();
