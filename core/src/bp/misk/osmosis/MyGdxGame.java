@@ -7,23 +7,19 @@ import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import java.util.ArrayList;
 
 public class MyGdxGame extends ApplicationAdapter {
     private final int leftBorder = 1;
-    private final int bottomBorder = 18;
-    private final int rightBorder = 100;
-    private final int topBorder = 78;
+    private final int bottomBorder = 1;
+    private final int rightBorder = 101;
+    private final int topBorder = 61;
     private World world = new World(new Vector2(0, 0), true);
     private Box2DDebugRenderer debugRenderer;
     private Stage stage;
@@ -31,6 +27,12 @@ public class MyGdxGame extends ApplicationAdapter {
     public static Texture sampleTexture;
     private FPSLogger fpsLogger = new FPSLogger();
     private ParticleManager particleManager = new ParticleManager(leftBorder, rightBorder);
+    private GameConfig config;
+    private DataDispatcher dataDispatcher;
+
+    public MyGdxGame(GameConfig config) {
+        this.config = config;
+    }
 
     @Override
 	public void create () {
@@ -40,11 +42,12 @@ public class MyGdxGame extends ApplicationAdapter {
         stage.getCamera().update();
         shapeRenderer = new ShapeRenderer();
 		Gdx.input.setInputProcessor(stage);
+        dataDispatcher = new DataDispatcher(config.dataVisualizer, particleManager);
+        dataDispatcher.setDispatchInterval(0.2f);
 
         createParticles();
-
         createBorders();
-	}
+    }
 
     private void createParticles() {
         int middle = (rightBorder - leftBorder) / 2;
@@ -52,9 +55,9 @@ public class MyGdxGame extends ApplicationAdapter {
         ParticleCreator rightParticleCreator = new ParticleCreator(shapeRenderer, world);
         ParticleCreator.setMaxWaterParticles(100);
 
-        leftParticleCreator.setSaltiness(0.2f);
+        leftParticleCreator.setSaltiness(config.leftSaltiness);
         leftParticleCreator.setBounds(leftBorder + 2, bottomBorder, middle - 2, topBorder);
-        rightParticleCreator.setSaltiness(0.6f);
+        rightParticleCreator.setSaltiness(config.rightSaltiness);
         rightParticleCreator.setBounds(middle + 2, bottomBorder, rightBorder - 2, topBorder);
 
         ArrayList<ParticleActor> particles = new ArrayList<ParticleActor>();
@@ -104,19 +107,10 @@ public class MyGdxGame extends ApplicationAdapter {
         shapeRenderer.end();
 //        fpsLogger.log();
         particleManager.update();
-        showData();
 
 //        debugRenderer.render(world, stage.getCamera().combined);
         world.step(Gdx.graphics.getDeltaTime(), 6, 2);
-    }
-
-    private void showData() {
-        ParticleManager.AreaData left = particleManager.getLeftAreaData();
-        ParticleManager.AreaData right = particleManager.getRightAreaData();
-        Gdx.app.log("", String.format("Left: %f\tRight: %f\tdiff: %f", left.getWaterConcentration(), right.getWaterConcentration(),
-                left.getWaterConcentration() - right.getWaterConcentration()));
-//        Gdx.app.log("", String.format("Left: %dw, %ds\tRight: %dw, %ds", left.waterParticles, left.saltParticles,
-//                                        right.waterParticles, right.saltParticles));
+        dataDispatcher.update(Gdx.graphics.getDeltaTime());
     }
 
     @Override

@@ -1,6 +1,5 @@
 package bp.misk.osmosis;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 
 import java.util.ArrayList;
@@ -75,6 +74,10 @@ public class ParticleManager {
             return leftAreaData;
         else
             return rightAreaData;
+    }
+
+    public float getRelativeMembranePosition() {
+        return membrane.getX() - leftBorder;
     }
 
     public static class AreaData {
