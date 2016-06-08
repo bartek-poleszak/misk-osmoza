@@ -13,22 +13,43 @@ import java.awt.event.ActionEvent;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {
-        showSetupWindow();
+        if (arg.length >= 2) {
+            float left = Float.parseFloat(arg[0]);
+            float right = Float.parseFloat(arg[1]);
+            float holeDistance = 0.3f;
+            if (arg.length >= 3)
+                holeDistance = Float.parseFloat(arg[2]);
+            runExperiment(left, right, holeDistance);
+        }
+        else
+            showSetupWindow();
 	}
+
+    private static void runExperiment(float leftSalt, float rightSalt, float holeDistance) {
+        System.out.print("" + leftSalt + " " + rightSalt + " " + holeDistance);
+        GameConfig gameConfig = new GameConfig();
+        gameConfig.leftSaltiness = leftSalt;
+        gameConfig.rightSaltiness = rightSalt;
+        gameConfig.holeDistance = holeDistance;
+        gameConfig.dataVisualizer = new FileSaveDataVisualizer();
+        gameConfig.frameSkip = 100;
+        runSimulation(gameConfig);
+    }
 
     private static void showSetupWindow() {
         final JFrame frame = new JFrame("Setup");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(3, 3));
-        panel.setPreferredSize(new Dimension(400, 200));
+        panel.setLayout(new GridLayout(4, 3));
+        panel.setPreferredSize(new Dimension(600, 200));
 
-        final JLabel leftLabel = new JLabel("Left saltiness:");
-        final JLabel rightLabel = new JLabel("Right saltiness:");
-        final JLabel emptyLabel = new JLabel();
+        final JLabel leftLabel = new JLabel("Zasolenie w lewej komorze:");
+        final JLabel rightLabel = new JLabel("Zasolenie w prawej komorze:");
+        final JLabel holeLabel = new JLabel("Odstęp między otworami");
 
         final JSlider leftSlider = new JSlider(0, 100);
+        leftSlider.setValue(70);
         final JLabel leftValueLabel = new JLabel("" + (leftSlider.getValue() / 100f));
         leftValueLabel.setHorizontalAlignment(SwingConstants.CENTER);
         leftSlider.addChangeListener(new ChangeListener() {
@@ -39,6 +60,7 @@ public class DesktopLauncher {
         });
 
         final JSlider rightSlider = new JSlider(0, 100);
+        rightSlider.setValue(40);
         final JLabel rightValueLabel = new JLabel("" + (rightSlider.getValue() / 100f));
         rightValueLabel.setHorizontalAlignment(SwingConstants.CENTER);
         rightSlider.addChangeListener(new ChangeListener() {
@@ -48,19 +70,34 @@ public class DesktopLauncher {
             }
         });
 
+        final JSlider holeSlider = new JSlider(10, 500);
+        holeSlider.setValue(30);
+        final JLabel holeValueLabel = new JLabel("" + (holeSlider.getValue() / 100f));
+        holeValueLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        holeSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                holeValueLabel.setText("" + (holeSlider.getValue() / 100f));
+            }
+        });
+
         JButton button = new JButton("Start");
+        final JTextField frameSkip = new JTextField("0");
         button.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 GameConfig gameConfig = new GameConfig();
                 gameConfig.leftSaltiness = leftSlider.getValue() / 100f;
                 gameConfig.rightSaltiness = rightSlider.getValue() / 100f;
+                gameConfig.holeDistance = holeSlider.getValue() / 100f;
                 gameConfig.dataVisualizer = new JFreeGraphDataVisualizer();
+                gameConfig.frameSkip = Integer.parseInt(frameSkip.getText());
 
                 runSimulation(gameConfig);
                 frame.setVisible(false);
             }
         });
+
 
 
         panel.add(leftLabel);
@@ -71,8 +108,12 @@ public class DesktopLauncher {
         panel.add(rightSlider);
         panel.add(rightValueLabel);
 
-        panel.add(emptyLabel);
-        panel.add(emptyLabel);
+        panel.add(holeLabel);
+        panel.add(holeSlider);
+        panel.add(holeValueLabel);
+
+        panel.add(new JLabel("Liczba pomijanych klatek"));
+        panel.add(frameSkip);
         panel.add(button);
 
         frame.getContentPane().add(panel, BorderLayout.CENTER);
@@ -88,8 +129,11 @@ public class DesktopLauncher {
         config.height = 630;
         config.foregroundFPS = 0;
         config.backgroundFPS = 0;
+        config.fullscreen = false;
+        config.forceExit = true;
         config.vSyncEnabled = false;
 
-		new LwjglApplication(new MyGdxGame(gameConfig), config);
+        MyGdxGame game = new MyGdxGame(gameConfig);
+        new LwjglApplication(game, config);
     }
 }

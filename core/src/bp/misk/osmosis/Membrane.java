@@ -12,16 +12,21 @@ import java.util.ArrayList;
  * Created by bp on 27.05.16.
  */
 public class Membrane extends Group {
+    private static float holeDistance;
     private ShapeRenderer renderer;
 
     public Membrane(float x, float bottom, float top, float space, ShapeRenderer renderer, World world) {
         this.renderer = renderer;
         setPosition(x, bottom);
-        for (float y = bottom; y <= top; y += space + 0.3f) {
-            float yy = Math.min(y+0.3f, top);
+        for (float y = bottom; y <= top; y += space + holeDistance) {
+            float yy = Math.min(y+ holeDistance, top);
             BorderActor actor = new BorderActor(x, y, x, yy, renderer, world);
             addActor(actor);
         }
+    }
+
+    public static void setHoleDistance(float holeDistance) {
+        Membrane.holeDistance = holeDistance;
     }
 
     public void dispose() {

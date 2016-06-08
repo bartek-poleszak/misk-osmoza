@@ -43,17 +43,20 @@ public class MyGdxGame extends ApplicationAdapter {
         shapeRenderer = new ShapeRenderer();
 		Gdx.input.setInputProcessor(stage);
         dataDispatcher = new DataDispatcher(config.dataVisualizer, particleManager);
-        dataDispatcher.setDispatchInterval(0.2f);
+        dataDispatcher.setDispatchInterval(1f);
 
         createParticles();
         createBorders();
     }
 
     private void createParticles() {
+
+        ParticleCreator.setMaxWaterParticles(config.maxWaterParticles);
+        ParticleCreator.setWaterRadius(config.waterParticleRadius);
+
         int middle = (rightBorder - leftBorder) / 2;
         ParticleCreator leftParticleCreator = new ParticleCreator(shapeRenderer, world);
         ParticleCreator rightParticleCreator = new ParticleCreator(shapeRenderer, world);
-        ParticleCreator.setMaxWaterParticles(100);
 
         leftParticleCreator.setSaltiness(config.leftSaltiness);
         leftParticleCreator.setBounds(leftBorder + 2, bottomBorder, middle - 2, topBorder);
@@ -80,7 +83,8 @@ public class MyGdxGame extends ApplicationAdapter {
         border = new BorderActor(leftBorder, bottomBorder, rightBorder, bottomBorder, shapeRenderer, world);
         stage.addActor(border);
 
-        Membrane membrane = new Membrane((rightBorder - leftBorder) / 2, bottomBorder, topBorder, 1.5f, shapeRenderer, world);
+        Membrane.setHoleDistance(config.holeDistance);
+        Membrane membrane = new Membrane((rightBorder - leftBorder) / 2, bottomBorder, topBorder, 3f * config.waterParticleRadius, shapeRenderer, world);
         stage.addActor(membrane);
         particleManager.setMembrane(membrane);
     }
@@ -97,20 +101,23 @@ public class MyGdxGame extends ApplicationAdapter {
 	public void render () {
 		Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+//        fpsLogger.log();
 
-        stage.act();
+        for (int i = 0; i < config.frameSkip+1; i++) {
+            stage.act();
+            particleManager.update();
+
+//        debugRenderer.render(world, stage.getCamera().combined);
+            float delta = 0.016f;
+            world.step(delta, 6, 2);
+            dataDispatcher.update(delta);
+        }
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(Color.GRAY);
         shapeRenderer.rect(0, 0, stage.getCamera().viewportWidth, stage.getCamera().viewportHeight);
         stage.draw();
         shapeRenderer.end();
-//        fpsLogger.log();
-        particleManager.update();
-
-//        debugRenderer.render(world, stage.getCamera().combined);
-        world.step(Gdx.graphics.getDeltaTime(), 6, 2);
-        dataDispatcher.update(Gdx.graphics.getDeltaTime());
     }
 
     @Override
